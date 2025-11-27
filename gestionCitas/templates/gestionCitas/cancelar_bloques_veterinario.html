@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Cancelar horarios por veterinario</h2>
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Cancelar bloques</button>
+</form>
+
+{% if citas_afectadas %}
+  <h3>Pacientes afectados</h3>
+  <table border="1">
+    <tr>
+      <th>Fecha</th>
+      <th>Hora</th>
+      <th>Mascota</th>
+      <th>Dueño</th>
+      <th>Motivo</th>
+      <th>Acciones</th>
+    </tr>
+    {% for bloque in citas_afectadas %}
+      <tr>
+        <td>{{ bloque.fecha }}</td>
+        <td>{{ bloque.hora_inicio }} - {{ bloque.hora_fin }}</td>
+        <td>{{ bloque.mascota }}</td>
+        <td>{{ bloque.mascota.dueño.nombre }} ({{ bloque.mascota.dueño.telefono }})</td>
+        <td>{{ bloque.motivo }}</td>
+        <td>
+          <a href="{% url 'gestionCitas:reprogramar_cita' bloque.id %}">Reprogramar</a>
+        </td>
+      </tr>
+    {% endfor %}
+  </table>
+{% endif %}
+{% endblock %}

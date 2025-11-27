@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h2>Bienvenido a Pochita S.A.</h2>
+  <p>Selecciona una opción:</p>
+
+  <ul>
+    <li><a href="{% url 'gestionCitas:calendario_mes' %}">Ver calendario de citas</a></li>
+    <li><a href="{% url 'gestionCitas:reprogramar_cita_page' %}">Cancelar bloques de horario por veterinario</a></li>
+    <li><a href="{% url 'gestionCitas:agenda_dia' %}">Gestión diaria de citas</a></li>
+  </ul>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Veterinaria Pochita</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-left">
+            <!-- Menú de navegación -->
+            <a href="{% url 'index' %}">
+                <button class="menu-toggle">
+                    <img style="width: 30px;" src="{% static 'media/Home.png' %}" alt="Home">
+                </button>
+            </a>
+            <input type="text" class="search-input" placeholder="Buscar pacientes, citas, fichas y productos...">
+        </div>
+
+        <div class="navbar-right">
+            <!-- Nombre de usuario y rol -->
+            <div class="user-info">
+                <span class="user-initials">
+                    {{ request.user.first_name|slice:":1" }} <!-- Inicial del nombre -->
+                </span>
+                <span class="user-name">{{ request.user.get_full_name }}</span>
+                <span class="user-role">{{ request.user.groups.first.name }}</span> <!-- Primer grupo, asumido como rol -->
+            </div>
+
+            <!-- Botón de cerrar sesión -->
+            <a href="{% url 'logout' %}" class="logout-button">
+                <span>Cerrar Sesión</span>
+                <i class="logout-icon">→</i>
+            </a>
+        </div>
+    </nav>
+
+    <div class="content">
+        {% block content %}
+        {% endblock %}
+    </div>
+</body>
+</html>

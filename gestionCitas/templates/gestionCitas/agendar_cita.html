@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Agendar cita</h2>
+
+<p>
+  <strong>Fecha:</strong> {{ bloque.fecha }}<br>
+  <strong>Horario:</strong> {{ bloque.hora_inicio }} - {{ bloque.hora_fin }}<br>
+  <strong>Veterinario:</strong> {{ bloque.veterinario.nombre }}
+</p>
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Confirmar cita</button>
+</form>
+
+<a href="{% url 'gestionCitas:calendario_mes' %}">Volver al calendario</a>
+{% endblock %}

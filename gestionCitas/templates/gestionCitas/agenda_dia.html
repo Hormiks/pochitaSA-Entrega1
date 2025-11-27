@@ -1,0 +1,502 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+  
+  .agenda-page {
+      width: 100%;
+      margin: 0 auto;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background-color: #f8fafc;
+      min-height: 100vh;
+  }
+
+  .page-header {
+    
+      background: linear-gradient(135deg, #16a34a, #22c55e);
+      color: #ffffff;
+      padding: 18px 24px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      box-sizing: border-box;
+      margin-bottom: 0;
+  }
+  .page-header-left h2 {
+      margin: 0;
+      font-size: 1.4rem;
+  }
+  .page-header-left p {
+      margin: 4px 0 0 0;
+      font-size: 0.9rem;
+      opacity: 0.9;
+  }
+
+  .page-header-right {
+      display: flex;
+      gap: 10px;
+  }
+  .icon-badge {
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      background-color: rgba(255,255,255,0.18);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+  }
+
+  .toolbar {
+      margin: 0 auto;
+      background-color: #ffffff;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding: 0 16px;
+      min-height: 10vh;
+      
+  }
+
+  .toolbar-left,
+  .toolbar-right {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+  }
+
+  .toolbar label {
+      font-size: 0.85rem;
+      margin-right: 4px;
+  }
+
+  .toolbar input[type="date"],
+  .toolbar select {
+      padding: 6px 8px;
+      border-radius: 999px;
+      border: 1px solid #d1d5db;
+      font-size: 0.85rem;
+  }
+
+  .btn {
+      padding: 6px 14px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.85rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      text-decoration: none;
+  }
+  .btn-primary {
+      background-color: #f97316;
+      color: white;
+  }
+  .btn-outline {
+      background-color: white;
+      border: 1px solid #d1d5db;
+      color: #374151;
+  }
+
+  .content-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 16px;
+  }
+
+  .grid-agenda {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 40px;
+  }
+
+  .section {
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(15,23,42,0.05);
+      padding: 20px;
+      height: fit-content;
+  }
+
+  .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+  }
+  .section-title h3 {
+      margin: 0;
+      font-size: 1.2rem;
+      font-weight: 600;
+  }
+  .section-subtitle {
+      font-size: 0.9rem;
+      color: #6b7280;
+      margin-top: 4px;
+  }
+
+  .legend {
+      display: flex;
+      gap: 12px;
+      font-size: 0.8rem;
+      align-items: center;
+      flex-wrap: wrap;
+  }
+  .dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      margin-right: 4px;
+  }
+  .dot-completada { background-color: #22c55e; }
+  .dot-encurso    { background-color: #eab308; }
+  .dot-programada { background-color: #3b82f6; }
+
+  .citas-lista {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+  }
+
+  .cita-item {
+      border-radius: 10px;
+      padding: 16px;
+      background: #f9fafb;
+      border-left: 4px solid #3b82f6;
+      position: relative;
+  }
+
+  .cita-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+  }
+
+  .cita-id {
+      font-weight: 600;
+      font-size: 0.9rem;
+  }
+
+  .cita-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+  }
+
+  .action-link {
+      font-size: 0.75rem;
+      color: #3b82f6;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+  }
+
+  .action-link:hover {
+      text-decoration: underline;
+  }
+
+  .cita-details {
+      font-size: 0.85rem;
+      color: #4b5563;
+  }
+
+  .cita-details div {
+      margin-bottom: 4px;
+  }
+
+  .cita-motivo {
+      margin-top: 8px;
+      font-weight: 500;
+  }
+
+  .horarios-lista {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+  }
+
+  .horario-item {
+      border-radius: 10px;
+      padding: 16px;
+      background: #f0fdf4;
+      border-left: 4px solid #22c55e;
+      position: relative;
+  }
+
+  .horario-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+  }
+
+  .horario-hora {
+      font-weight: 600;
+      font-size: 0.95rem;
+  }
+
+  .horario-vet {
+      font-size: 0.85rem;
+      color: #6b7280;
+  }
+
+  .btn-agendar {
+      background-color: #f97316;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 16px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      font-weight: 500;
+  }
+
+  .btn-agendar:hover {
+      background-color: #ea580c;
+  }
+
+  .footer {
+      background-color:white;
+      color: black;
+      padding: 20px;
+      text-align: center;
+      margin-top: 40px;
+      border-radius: 0;
+  }
+
+  .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+  }
+
+  .footer h3 {
+      margin: 0 0 8px 0;
+      font-size: 1.1rem;
+  }
+
+  .footer p {
+      margin: 4px 0;
+      font-size: 0.85rem;
+      opacity: 0.8;
+  }
+
+  .rol-actual {
+      margin-top: 12px;
+      font-size: 0.8rem;
+      opacity: 0.7;
+  }
+
+  .muted {
+      color: #9ca3af;
+      font-size: 0.9rem;
+      text-align: center;
+      padding: 20px;
+  }
+
+  @media (max-width: 900px) {
+      .grid-agenda {
+          grid-template-columns: 1fr;
+      }
+      
+      .toolbar {
+          flex-direction: column;
+          align-items: flex-start;
+      }
+      
+      .toolbar-right {
+          margin-top: 12px;
+      }
+      
+      .cita-header {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 8px;
+      }
+      
+      .cita-actions {
+          align-self: flex-end;
+      }
+  }
+</style>
+
+<div class="agenda-page">
+  <!-- HEADER VERDE -->
+  <div class="page-header">
+    <div class="page-header-left">
+      <h2>Gestión de Citas</h2>
+      <p>Gestión de citas, calendario veterinario</p>
+    </div>
+    <div class="page-header-right">
+      <div class="icon-badge">🔔</div>
+    </div>
+  </div>
+
+  <!-- BARRA SUPERIOR: FILTRO FECHA / VETERINARIO -->
+  <div class="toolbar">
+    <form method="get" action="" style="display:flex; align-items:center; justify-content:space-between; gap:16px; width:100%;">
+      <div class="toolbar-left" style="display:flex; align-items:center; gap:16px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 0.9rem;">Seleccionar Día:</span>
+          <input type="date" id="fecha" name="fecha" value="{{ fecha|date:'Y-m-d' }}">
+        </div>
+
+        <a style="background-color:#eab308" href="{% url 'gestionCitas:calendario_mes' %}" class="btn btn-primary" role="button">
+          Abrir calendario
+        </a>
+
+        <!--
+        <a style="background-color: #16a34a;" href="" class="btn btn-primary" role="button">
+          Agregar Disponibilidad
+        </a>
+        -->
+
+        <a style="background-color: #16a34a;" href="#" class="btn btn-primary" role="button">
+          Lista de espera
+        </a>
+      </div>
+
+      <div class="toolbar-right" style="display:flex; align-items:center; gap:16px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <label for="veterinario">Filtrar por veterinario:</label>
+          <select id="veterinario" name="veterinario">
+            <option value="">Todos los veterinarios</option>
+            {% for vet in veterinarios %}
+              <option value="{{ vet.id }}" {% if vet.id == veterinario_seleccionado %}selected{% endif %}>{{ vet.nombre }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div style="align-self:flex-end;">
+          <button class="btn btn-primary" type="submit">
+            Actualizar
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div class="content-container">
+    <!-- TÍTULO & LEYENDA -->
+     <h3 style="text-align: center;">Agenda de citas</h3>
+    <div class="section-title" style="margin-bottom: 20px; padding: 0 8px;">
+        
+        <div class="section-subtitle">
+          Día: {{ fecha|date:"j \\d\\e F, Y" }}
+          {% if veterinario_seleccionado %}
+            – Veterinario seleccionado
+          {% endif %}
+        </div>
+      
+    </div>
+
+    <!-- GRID PRINCIPAL: OCUPADOS vs LIBRES -->
+    <div class="grid-agenda">
+      <!-- COLUMNA IZQUIERDA: HORARIOS OCUPADOS -->
+      <div class="section">
+        <h3 style="margin: 0 0 16px 0; text-align: center; font-size: 1.2rem; color: crimson;">Horarios ocupados</h3>
+        <hr>
+        <div class="legend">
+          <hr>
+          <p>
+          <span><span class="dot dot-completada"></span>Completada  </span>
+          <span><span class="dot dot-encurso"></span>En curso  </span>
+          <span><span class="dot dot-programada"></span>Programada</span>
+          <hr>
+          </p>
+        </div>
+        <div class="citas-lista">
+          {% if bloques_ocupados %}
+            {% for b in bloques_ocupados %}
+              <div class="cita-item">
+                <div class="cita-header">
+                  <div class="cita-id">ID: #CC{{ b.id }} | Vet: {{ b.veterinario.nombre }}</div>
+                  <div class="cita-actions">
+                    <a class="action-link" href="{% url 'gestionCitas:reprogramar_cita' b.id %}">
+                      Reprogramar
+                    </a>
+                    <a class="action-link" href="{% url 'gestionCitas:cancelar_bloques_veterinario' b.id %}">
+                      Cancelar
+                    </a>
+                  </div>
+                </div>
+                
+                <div class="cita-details">
+                  <div><strong>Hora:</strong> {{ b.hora_inicio }} - {{ b.hora_fin }}</div>
+                  <div><strong>Paciente:</strong> {{ b.mascota.nombre }}</div>
+                  <div><strong>Tutor:</strong> {{ b.mascota.dueño.nombre }}</div>
+                  <div class="cita-motivo">
+                    <strong>Motivo:</strong> {{ b.motivo|default:"Control" }} 
+                  </div>
+                </div>
+                
+                <div style="margin-top: 8px;">
+                  <span class="estado-pill">
+                    {% if b.estado == 'COMPLETADA' %}
+                      <span class="dot dot-completada"></span>Completada
+                    {% elif b.estado == 'EN_CURSO' %}
+                      <span class="dot dot-encurso"></span>En curso
+                    {% else %}
+                      <span class="dot dot-programada"></span>Programada
+                    {% endif %}
+                  </span>
+                </div>
+              </div>
+            {% endfor %}
+          {% else %}
+            <p class="muted">No hay citas ocupadas para este día.</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- COLUMNA DERECHA: HORARIOS LIBRES -->
+      <div class="section">
+        <h3 style="margin: 0 0 16px 0; text-align: center; font-size: 1.2rem; color:#16a34a ;">Horarios libres</h3>
+        <hr>
+        <div class="horarios-lista">
+          {% if bloques_libres %}
+            {% for b in bloques_libres %}
+              {% if b.estado == 'DISPONIBLE' %}
+                <div class="horario-item">
+                  <div class="horario-header">
+                    <div>
+                      <div class="horario-hora">{{ b.hora_inicio }}</div>
+                      <div class="horario-vet">{{ b.veterinario.nombre }} Disponible</div>
+                    </div>
+                    <a href="{% url 'gestionCitas:agendar_cita' b.id %}">
+                      <button class="btn-agendar">Agendar</button>
+                    </a>
+                  </div>
+                </div>
+              {% endif %}
+            {% endfor %}
+          {% else %}
+            <p class="muted">No hay horarios libres para este día.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-content">
+      <h3>Veterinaria Pochita</h3>
+      <p>Sistema de Gestión Veterinaria v1.0</p>
+      <p>© 2025 Veterinaria Pochita. Todos los derechos reservados.</p>
+      <div class="rol-actual">Rol actual: Recepcionista</div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
