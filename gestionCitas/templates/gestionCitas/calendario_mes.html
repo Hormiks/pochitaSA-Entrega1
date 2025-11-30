@@ -516,12 +516,16 @@
                         <span class="estado" style="color:red;">Cancelado</span>
                         <hr>
                         <a style="background-color: #16a34a9f; color: #ffffff; display:inline-block; padding: 8px 16px; border-radius: 6px; text-decoration: none; text-align: center; font-size: 0.75rem; width: 100%; box-sizing: border-box;" href="{% url 'gestionCitas:agendar_cita' bloque.pk %}">Agendar</a>
+                      {% elif bloque.estado == 'COMPLETADA' %}
+                        <small><strong>Mascota:</strong> {{ bloque.mascota }}</small>
+                        <span class="estado" style="color:#22c55e;">✓ Completada</span>
                       {% endif %}
                     </div>
                   {% empty %}
                     <small>Sin bloques</small>
-                    <a style="background-color: #16a34a93; color: #ffffff; display:inline-block; padding: 8px 16px; border-radius: 6px; text-decoration: none; text-align: center; font-size: 0.75rem; width: 100%; box-sizing: border-box; margin-top: 4px;" href="{% url 'gestionCitas:agregar_disponibilidad' dia.fecha|date:'Y-m-d' '0' %}">Añadir disponibilidad</a>
                   {% endfor %}
+                  <!-- Botón siempre visible para añadir más bloques -->
+                  <a style="background-color: #3b82f6; color: #ffffff; display:inline-block; padding: 8px 16px; border-radius: 6px; text-decoration: none; text-align: center; font-size: 0.75rem; width: 100%; box-sizing: border-box; margin-top: 8px;" href="{% url 'gestionCitas:agregar_disponibilidad' dia.fecha|date:'Y-m-d' '0' %}">+ Añadir bloque</a>
                 {% endif %}
               </td>
             {% endfor %}

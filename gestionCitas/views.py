@@ -10,12 +10,26 @@ from .forms import CancelarBloquesForm, ReprogramarCitaForm, ClienteForm, Mascot
 from django.contrib.auth.decorators import login_required
 
 
+def actualizar_citas_completadas():
+    """
+    Actualiza automáticamente las citas RESERVADAS cuya fecha ya pasó a COMPLETADA.
+    """
+    hoy = date.today()
+    BloqueAtencion.objects.filter(
+        estado='RESERVADO',
+        fecha__lt=hoy
+    ).update(estado='COMPLETADA')
+
+
 # Create your views here.
 # ===== HU002: Calendario mensual y agendar hora =====
 
 @roles_requeridos("Recepcionista")
 def calendario_mes(request):
     """Muestra el mes en curso con los bloques por veterinario."""
+    # Actualizar citas pasadas a COMPLETADA
+    actualizar_citas_completadas()
+    
     hoy = date.today()
     
     # Obtener el año y mes de la URL
@@ -165,6 +179,8 @@ def agenda_dia(request):
     - Horarios ocupados (bloques con mascota asignada)
     - Horarios libres (bloques sin mascota, disponibles o cancelados)
     """
+    # Actualizar citas pasadas a COMPLETADA
+    actualizar_citas_completadas()
 
     # Fecha seleccionada (GET ?fecha=YYYY-MM-DD), por defecto hoy
     fecha_str = request.GET.get('fecha')
@@ -185,7 +201,7 @@ def agenda_dia(request):
 
     if veterinario_id:
         bloques_qs = bloques_qs.filter(veterinario_id=veterinario_id)
-        vet_seleccionado = int(veterinario_id)
+        vet_seleccionado = veterinario_id
 
     bloques_qs = bloques_qs.order_by('hora_inicio')
 

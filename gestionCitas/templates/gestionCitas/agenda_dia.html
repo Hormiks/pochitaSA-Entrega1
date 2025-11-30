@@ -370,9 +370,9 @@
         <div style="display: flex; align-items: center; gap: 8px;">
           <label for="veterinario">Filtrar por veterinario:</label>
           <select id="veterinario" name="veterinario">
-            <option value="">Todos los veterinarios</option>
+            <option value="" {% if not veterinario_seleccionado %}selected{% endif %}>Todos los veterinarios</option>
             {% for vet in veterinarios %}
-              <option value="{{ vet.id }}" {% if vet.id == veterinario_seleccionado %}selected{% endif %}>{{ vet.nombre }}</option>
+              <option value="{{ vet.rut_vet }}" {% if vet.rut_vet == veterinario_seleccionado %}selected{% endif %}>{{ vet.nombre }}</option>
             {% endfor %}
           </select>
         </div>

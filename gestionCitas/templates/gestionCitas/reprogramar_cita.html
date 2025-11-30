@@ -1,14 +1,134 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Reprogramar Cita</h2>
-<p><strong>Cita original:</strong> {{ bloque_original.fecha }} {{ bloque_original.hora_inicio }} - {{ bloque_original.hora_fin }}</p>
 
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit" class="btn btn-primary">Guardar nueva cita</button>
-</form>
+<style>
+  .container {
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(15,23,42,0.05);
+  }
 
-<a href="{% url 'gestionCitas:agenda_dia' %}">Volver</a>
+  h2 {
+    color: #16a34a;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  .info-box {
+    background-color: #f0fdf4;
+    border-left: 4px solid #16a34a;
+    padding: 12px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+  }
+
+  .form-group {
+    margin-bottom: 16px;
+  }
+
+  label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #374151;
+  }
+
+  input[type="time"],
+  input[type="text"],
+  select,
+  textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 1rem;
+    box-sizing: border-box;
+  }
+
+  .error-text {
+    margin-top: 6px;
+    color: #b91c1c;
+    font-size: 0.9em;
+  }
+
+  .muted {
+    color: #6b7280;
+    font-size: 0.9rem;
+    margin-top: 6px;
+  }
+
+  .button-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .btn {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    font-weight: 600;
+    text-decoration: none;
+    text-align: center;
+  }
+
+  .btn-primary {
+    background-color: #16a34a;
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background-color: #15803d;
+  }
+
+  .btn-secondary {
+    background-color: #e5e7eb;
+    color: #374151;
+  }
+
+  .btn-secondary:hover {
+    background-color: #d1d5db;
+  }
+</style>
+
+<div class="container">
+  <h2>Reprogramar cita</h2>
+
+  <div class="info-box">
+    <p>
+      <strong>Cita original:</strong>
+      {{ bloque_original.fecha }} {{ bloque_original.hora_inicio }} - {{ bloque_original.hora_fin }}
+    </p>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+
+    {% for field in form %}
+      <div class="form-group">
+        {{ field.label_tag }}
+        {{ field }}
+        {% if field.errors %}
+          <div class="error-text">{{ field.errors }}</div>
+        {% endif %}
+        {% if field.help_text %}
+          <div class="muted">{{ field.help_text|safe }}</div>
+        {% endif %}
+      </div>
+    {% endfor %}
+
+    <div class="button-group">
+      <button type="submit" class="btn btn-primary">Guardar nueva cita</button>
+      <a href="{% url 'gestionCitas:agenda_dia' %}" class="btn btn-secondary">Volver</a>
+    </div>
+  </form>
+</div>
+
 {% endblock %}

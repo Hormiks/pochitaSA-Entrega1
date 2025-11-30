@@ -41,6 +41,7 @@ class BloqueAtencion(models.Model):
     ESTADO_CHOICES = [
         ('DISPONIBLE', 'Disponible'),
         ('RESERVADO', 'Reservado'),
+        ('COMPLETADA', 'Completada'),
         ('CANCELADO_VET', 'Cancelado por veterinario'),
         ('CANCELADO_PAC', 'Cancelado por paciente'),
     ]
