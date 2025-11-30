@@ -25,9 +25,9 @@
         <td>{{ bloque.hora_inicio }} - {{ bloque.hora_fin }}</td>
         <td>{{ bloque.mascota }}</td>
         <td>{{ bloque.mascota.dueño.nombre }} ({{ bloque.mascota.dueño.telefono }})</td>
-        <td>{{ bloque.motivo }}</td>
+        <td>{{ bloque.motivo_consulta }}</td>
         <td>
-          <a href="{% url 'gestionCitas:reprogramar_cita' bloque.id %}">Reprogramar</a>
+          <a href="{% url 'gestionCitas:reprogramar_cita' bloque.pk %}">Reprogramar</a>
         </td>
       </tr>
     {% endfor %}

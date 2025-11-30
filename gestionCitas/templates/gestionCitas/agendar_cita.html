@@ -1,18 +1,466 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Agendar cita</h2>
 
-<p>
-  <strong>Fecha:</strong> {{ bloque.fecha }}<br>
-  <strong>Horario:</strong> {{ bloque.hora_inicio }} - {{ bloque.hora_fin }}<br>
-  <strong>Veterinario:</strong> {{ bloque.veterinario.nombre }}
-</p>
+<style>
+  .wrap {
+    max-width: 750px;
+    margin: 32px auto;
+    padding: 18px;
+  }
 
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Confirmar cita</button>
-</form>
+  .card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+    padding: 18px;
+  }
 
-<a href="{% url 'gestionCitas:calendario_mes' %}">Volver al calendario</a>
+  h2 { margin: 0 0 12px; }
+  h3 { margin: 18px 0 10px; }
+
+  .meta {
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 14px;
+    font-size: 0.95rem;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .field {
+    margin-bottom: 10px;
+  }
+
+  .field label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #111827;
+  }
+
+  .field input, .field select, .field textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    font-size: 1rem;
+    box-sizing: border-box;
+    outline: none;
+  }
+
+  .field input:focus, .field select:focus, .field textarea:focus {
+    border-color: #22c55e;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.20);
+  }
+
+  .error-text {
+    margin-top: 6px;
+    color: #b91c1c;
+    font-size: 0.9em;
+  }
+
+  .status {
+    display: none;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+
+  .status.ok   { background: #dcfce7; color: #166534; border: 1px solid #86efac; display: block; }
+  .status.warn { background: #fef9c3; color: #854d0e; border: 1px solid #fde047; display: block; }
+  .status.bad  { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; display: block; }
+
+  .muted {
+    color: #6b7280;
+    font-size: 0.9rem;
+    margin-top: 4px;
+  }
+
+  .actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+  }
+
+  .btnx {
+    border: none;
+    border-radius: 10px;
+    padding: 10px 14px;
+    cursor: pointer;
+    font-weight: 700;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btnx-primary { background: #16a34a; color: white; }
+  .btnx-primary:hover { background: #15803d; }
+
+  .btnx-outline {
+    background: white;
+    border: 1px solid #d1d5db;
+    color: #374151;
+  }
+  .btnx-outline:hover { background: #f3f4f6; }
+
+  .disabled {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  .box {
+    background: #f8fafc;
+    border: 1px dashed #d1d5db;
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+</style>
+
+<div class="wrap">
+  <div class="card">
+    <h2>Agendar cita</h2>
+
+    <div class="meta">
+      <div><strong>Fecha:</strong> {{ bloque.fecha }}</div>
+      <div><strong>Horario:</strong> {{ bloque.hora_inicio }} - {{ bloque.hora_fin }}</div>
+      <div><strong>Veterinario:</strong> {{ bloque.veterinario.nombre }}</div>
+    </div>
+
+    <form method="post" id="agendar-form">
+      {% csrf_token %}
+
+      <h3>Datos del Cliente</h3>
+      <div id="cliente-status" class="status"></div>
+
+      {% if cliente_form.non_field_errors %}
+        <div class="status bad" style="display:block;">
+          {{ cliente_form.non_field_errors }}
+        </div>
+      {% endif %}
+
+      {% for field in cliente_form %}
+        <div class="field">
+          {{ field.label_tag }}
+          {{ field }}
+          {% if field.errors %}
+            <div class="error-text">{{ field.errors }}</div>
+          {% endif %}
+        </div>
+      {% endfor %}
+
+      <h3>Datos de la Mascota</h3>
+      <div id="mascota-status" class="status"></div>
+
+      <div id="mascotas-existentes" class="box" style="display:none;">
+        <label for="select-mascota-existente"><strong>Mascotas registradas del cliente</strong></label>
+        <select id="select-mascota-existente">
+          <option value="">-- Registrar nueva mascota --</option>
+        </select>
+        <div class="muted">Si selecciona una, se cargarán sus datos automáticamente.</div>
+      </div>
+
+      {% if mascota_form.non_field_errors %}
+        <div class="status bad" style="display:block;">
+          {{ mascota_form.non_field_errors }}
+        </div>
+      {% endif %}
+
+      {% for field in mascota_form %}
+        <div class="field">
+          {{ field.label_tag }}
+          {{ field }}
+          {% if field.errors %}
+            <div class="error-text">{{ field.errors }}</div>
+          {% endif %}
+        </div>
+      {% endfor %}
+
+      <h3>Motivo de la Consulta</h3>
+      <div class="field">
+        <label for="motivo_consulta">Motivo</label>
+        <input
+          type="text"
+          name="motivo_consulta"
+          id="motivo_consulta"
+          maxlength="30"
+          value="{{ bloque.motivo_consulta|default_if_none:'' }}"
+        >
+      </div>
+
+      <div class="actions">
+        <button type="submit" id="btn-submit" class="btnx btnx-primary">Confirmar cita</button>
+        <a href="{% url 'gestionCitas:calendario_mes' %}" class="btnx btnx-outline">Volver al calendario</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const clienteStatus = document.getElementById('cliente-status');
+  const mascotaStatus = document.getElementById('mascota-status');
+  const btnSubmit = document.getElementById('btn-submit');
+
+  const mascotasContainer = document.getElementById('mascotas-existentes');
+  const selectMascota = document.getElementById('select-mascota-existente');
+  let mascotasData = [];
+
+  // Inputs cliente (con prefix "cliente")
+  const rutInput = document.getElementById('id_cliente-rut_cli');
+  const nombreClienteInput = document.getElementById('id_cliente-nombre');
+  const telefonoInput = document.getElementById('id_cliente-telefono');
+  const emailInput = document.getElementById('id_cliente-email');
+  const direccionInput = document.getElementById('id_cliente-direccion');
+
+  // Inputs mascota (con prefix "mascota")
+  const chipInput = document.getElementById('id_mascota-codigo_chip');
+  const nombreMascotaInput = document.getElementById('id_mascota-nombre');
+  const especieInput = document.getElementById('id_mascota-especie');
+  const razaInput = document.getElementById('id_mascota-raza');
+  const edadInput = document.getElementById('id_mascota-edad');
+  const pesoInput = document.getElementById('id_mascota-peso');
+
+  function setStatus(el, type, msg) {
+    el.classList.remove('ok', 'warn', 'bad');
+    el.classList.add(type);
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  function clearStatus(el) {
+    el.classList.remove('ok', 'warn', 'bad');
+    el.textContent = '';
+    el.style.display = 'none';
+  }
+
+  function setSubmitEnabled(enabled) {
+    if (enabled) {
+      btnSubmit.classList.remove('disabled');
+      btnSubmit.disabled = false;
+      return;
+    }
+    btnSubmit.classList.add('disabled');
+    btnSubmit.disabled = true;
+  }
+
+  function normalizarRut(valor) {
+    return (valor || '')
+      .replace(/\./g, '')
+      .replace(/-/g, '')
+      .replace(/\s+/g, '')
+      .toUpperCase()
+      .trim();
+  }
+
+  function rutEsCompleto(rut) {
+    // 7 u 8 dígitos + dígito o K
+    return /^(\d{7,8})([0-9K])$/.test(rut);
+  }
+
+  function debounce(fn, ms) {
+    let t;
+    return function (...args) {
+      clearTimeout(t);
+      t = setTimeout(() => fn.apply(this, args), ms);
+    };
+  }
+
+  async function fetchJSON(url) {
+    const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+    return await res.json();
+  }
+
+  async function buscarClienteYAutocompletar(rutNormalizado) {
+    if (!rutNormalizado) return;
+
+    const urlCliente = `{% url 'gestionCitas:buscar_cliente' %}?rut=${encodeURIComponent(rutNormalizado)}`;
+    const data = await fetchJSON(urlCliente);
+
+    if (data.encontrado) {
+      if (nombreClienteInput) nombreClienteInput.value = data.nombre || '';
+      if (telefonoInput) telefonoInput.value = data.telefono || '';
+      if (emailInput) emailInput.value = data.email || '';
+      if (direccionInput) direccionInput.value = data.direccion || '';
+
+      setStatus(clienteStatus, 'ok', '✓ Cliente encontrado (autocompletado).');
+      await cargarMascotasDelCliente(rutNormalizado);
+    } else {
+      setStatus(clienteStatus, 'warn', '⚠ Cliente nuevo. Complete los datos para crearlo.');
+      mascotasContainer.style.display = 'none';
+      selectMascota.innerHTML = '<option value="">-- Registrar nueva mascota --</option>';
+      mascotasData = [];
+    }
+  }
+
+  async function cargarMascotasDelCliente(rutNormalizado) {
+    const urlMascotas = `{% url 'gestionCitas:buscar_mascotas_cliente' %}?rut=${encodeURIComponent(rutNormalizado)}`;
+    const data = await fetchJSON(urlMascotas);
+
+    mascotasData = Array.isArray(data.mascotas) ? data.mascotas : [];
+
+    if (mascotasData.length > 0) {
+      mascotasContainer.style.display = 'block';
+      selectMascota.innerHTML = '<option value="">-- Registrar nueva mascota --</option>';
+
+      mascotasData.forEach((m) => {
+        const opt = document.createElement('option');
+        opt.value = m.codigo_chip; // usamos chip como key
+        opt.textContent = `${m.nombre} (${m.especie}) - Chip: ${m.codigo_chip}`;
+        selectMascota.appendChild(opt);
+      });
+    } else {
+      mascotasContainer.style.display = 'none';
+      selectMascota.innerHTML = '<option value="">-- Registrar nueva mascota --</option>';
+    }
+  }
+
+  function cargarMascotaEnFormulario(m) {
+    if (chipInput) chipInput.value = m.codigo_chip || '';
+    if (nombreMascotaInput) nombreMascotaInput.value = m.nombre || '';
+    if (especieInput) especieInput.value = m.especie || '';
+    if (razaInput) razaInput.value = m.raza || '';
+    if (edadInput) edadInput.value = (m.edad ?? '') === null ? '' : (m.edad ?? '');
+    if (pesoInput) pesoInput.value = m.peso || '';
+  }
+
+  function limpiarMascotaFormulario() {
+    if (chipInput) chipInput.value = '';
+    if (nombreMascotaInput) nombreMascotaInput.value = '';
+    if (especieInput) especieInput.value = '';
+    if (razaInput) razaInput.value = '';
+    if (edadInput) edadInput.value = '';
+    if (pesoInput) pesoInput.value = '';
+  }
+
+  async function buscarMascotaPorChip(chip) {
+    const chipVal = (chip || '').trim();
+    if (!chipVal) return;
+
+    // endpoint recomendado: ?chip=...
+    const urlMascota = `{% url 'gestionCitas:buscar_mascota' %}?chip=${encodeURIComponent(chipVal)}`;
+    const data = await fetchJSON(urlMascota);
+
+    if (data.encontrado) {
+      // Autocompleta mascota
+      cargarMascotaEnFormulario({
+        codigo_chip: chipVal,
+        nombre: data.nombre,
+        especie: data.especie,
+        raza: data.raza,
+        edad: data.edad,
+        peso: data.peso
+      });
+
+      setStatus(mascotaStatus, 'ok', '✓ Mascota encontrada (autocompletada).');
+
+      // Dueño (si viene rut_dueno)
+      const rutDueno = normalizarRut(data.rut_dueno || '');
+      const rutActual = normalizarRut(rutInput ? rutInput.value : '');
+
+      if (rutDueno) {
+        if (!rutActual) {
+          rutInput.value = rutDueno;
+          await buscarClienteYAutocompletar(rutDueno);
+        } else if (rutActual !== rutDueno) {
+          // Evitamos que se guarde “cruzado”
+          setStatus(mascotaStatus, 'bad', '✗ Este chip pertenece a otro cliente. Corrija el RUT o use otra mascota.');
+          setSubmitEnabled(false);
+          return;
+        }
+      }
+
+      setSubmitEnabled(true);
+    } else {
+      setStatus(mascotaStatus, 'warn', '⚠ Mascota nueva. Complete los datos para registrarla.');
+      setSubmitEnabled(true);
+    }
+  }
+
+  // --- Eventos automáticos ---
+
+  const onRutChange = debounce(async function () {
+    if (!rutInput) return;
+
+    const rutNorm = normalizarRut(rutInput.value);
+    rutInput.value = rutNorm;
+
+    if (!rutNorm) {
+      clearStatus(clienteStatus);
+      mascotasContainer.style.display = 'none';
+      selectMascota.innerHTML = '<option value="">-- Registrar nueva mascota --</option>';
+      mascotasData = [];
+      return;
+    }
+
+    if (rutEsCompleto(rutNorm)) {
+      setSubmitEnabled(true);
+      await buscarClienteYAutocompletar(rutNorm);
+    } else {
+      // 아직 불완전 -> no buscamos
+      clearStatus(clienteStatus);
+      mascotasContainer.style.display = 'none';
+      selectMascota.innerHTML = '<option value="">-- Registrar nueva mascota --</option>';
+      mascotasData = [];
+    }
+  }, 250);
+
+  const onChipChange = debounce(async function () {
+    if (!chipInput) return;
+
+    const chipVal = (chipInput.value || '').trim();
+    if (!chipVal) {
+      clearStatus(mascotaStatus);
+      setSubmitEnabled(true);
+      return;
+    }
+
+    // gatillo mínimo (ajustable)
+    if (chipVal.length >= 5) {
+      setSubmitEnabled(true);
+      await buscarMascotaPorChip(chipVal);
+    } else {
+      clearStatus(mascotaStatus);
+      setSubmitEnabled(true);
+    }
+  }, 250);
+
+  if (rutInput) rutInput.addEventListener('input', onRutChange);
+  if (chipInput) chipInput.addEventListener('input', onChipChange);
+
+  // Dropdown: mascotas del cliente
+  if (selectMascota) {
+    selectMascota.addEventListener('change', function () {
+      const chipElegido = this.value;
+
+      if (!chipElegido) {
+        limpiarMascotaFormulario();
+        clearStatus(mascotaStatus);
+        setSubmitEnabled(true);
+        return;
+      }
+
+      const m = mascotasData.find(x => x.codigo_chip === chipElegido);
+      if (m) {
+        cargarMascotaEnFormulario(m);
+        setStatus(mascotaStatus, 'ok', '✓ Mascota cargada desde registros del cliente.');
+        setSubmitEnabled(true);
+      }
+    });
+  }
+
+});
+</script>
+
 {% endblock %}

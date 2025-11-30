@@ -2,13 +2,13 @@ import re
 from django.core.exceptions import ValidationError
 
 def validar_rut(value):
-    # Eliminar cualquier guion si está presente
-    value = value.replace('-', '').upper()
+    # Eliminar cualquier guion, espacio si está presente
+    value = value.replace('-', '').replace(' ', '').replace('.', '').upper().strip()
 
-    patron = re.compile(r"^(\d{8})([0-9K])$")
+    patron = re.compile(r"^(\d{7,8})([0-9K])$")
 
     if not patron.match(value):
-        raise ValidationError("El formato del RUT no es válido. El formato correcto es: 12345678-9")
+        raise ValidationError("El formato del RUT no es válido. Ingresa sin guiones (ej: 123456789 o 12345678K)")
 
 
 def validar_numeros(value):

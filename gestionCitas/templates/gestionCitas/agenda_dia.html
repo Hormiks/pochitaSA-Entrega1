@@ -420,14 +420,16 @@
             {% for b in bloques_ocupados %}
               <div class="cita-item">
                 <div class="cita-header">
-                  <div class="cita-id">ID: #CC{{ b.id }} | Vet: {{ b.veterinario.nombre }}</div>
+                  <div class="cita-id">ID: #CC{{ b.pk }} | Vet: {{ b.veterinario.nombre }}</div>
                   <div class="cita-actions">
-                    <a class="action-link" href="{% url 'gestionCitas:reprogramar_cita' b.id %}">
+                    <a class="action-link" href="{% url 'gestionCitas:reprogramar_cita' b.pk %}">
                       Reprogramar
                     </a>
-                    <a class="action-link" href="{% url 'gestionCitas:cancelar_bloques_veterinario' b.id %}">
-                      Cancelar
-                    </a>
+                    <form method="post" action="{% url 'gestionCitas:cancelar_bloques_veterinario' b.pk %}" style="display:inline;">
+                      {% csrf_token %}
+                      <input type="hidden" name="next" value="{% url 'gestionCitas:agenda_dia' %}?fecha={{ fecha|date:'Y-m-d' }}{% if veterinario_seleccionado %}&veterinario={{ veterinario_seleccionado }}{% endif %}">
+                      <button type="submit" class="action-link" style="background:none; border:none; padding:0; cursor:pointer;" onclick="return confirm('¿Estás seguro de que quieres cancelar esta cita?');">Cancelar</button>
+                    </form>
                   </div>
                 </div>
                 
@@ -436,7 +438,7 @@
                   <div><strong>Paciente:</strong> {{ b.mascota.nombre }}</div>
                   <div><strong>Tutor:</strong> {{ b.mascota.dueño.nombre }}</div>
                   <div class="cita-motivo">
-                    <strong>Motivo:</strong> {{ b.motivo|default:"Control" }} 
+                    <strong>Motivo:</strong> {{ b.motivo_consulta|default:"Control" }} 
                   </div>
                 </div>
                 
@@ -473,7 +475,7 @@
                       <div class="horario-hora">{{ b.hora_inicio }}</div>
                       <div class="horario-vet">{{ b.veterinario.nombre }} Disponible</div>
                     </div>
-                    <a href="{% url 'gestionCitas:agendar_cita' b.id %}">
+                    <a href="{% url 'gestionCitas:agendar_cita' b.pk %}">
                       <button class="btn-agendar">Agendar</button>
                     </a>
                   </div>

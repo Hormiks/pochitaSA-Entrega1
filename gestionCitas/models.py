@@ -13,13 +13,13 @@ class Cliente(models.Model):
 
 
 class Mascota(models.Model):
-    codigo_chip = models.CharField(max_length=15, primary_key=True, validators=[validar_numeros])  # Código del chip
+    codigo_chip = models.CharField(max_length=15, primary_key=True)  # Código del chip
     nombre = models.CharField(max_length=100)
     especie = models.CharField(max_length=50)
     raza = models.CharField(max_length=50, blank=True)
     edad = models.PositiveIntegerField(null=True, blank=True)  # Edad opcional
     peso = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)  # Peso opcional
-    dueño = models.ForeignKey(Cliente, on_delete=models.CASCADE, related_name='mascotas')
+    dueño = models.ForeignKey(Cliente, on_delete=models.CASCADE, related_name='mascotas')  # Relación con Cliente
 
     def __str__(self):
         return f"{self.nombre} ({self.especie})"
@@ -45,6 +45,10 @@ class BloqueAtencion(models.Model):
         ('CANCELADO_PAC', 'Cancelado por paciente'),
     ]
 
+    codigo_atencion = models.CharField(max_length=10, primary_key=True)
+    
+    codigo_cita = models.CharField(max_length=10, null=True, blank=True)
+
     veterinario = models.ForeignKey(
         Veterinario,
         on_delete=models.CASCADE,
@@ -67,7 +71,7 @@ class BloqueAtencion(models.Model):
         blank=True,
         related_name='bloques'
     )
-    motivo = models.TextField(blank=True)
+    motivo_consulta = models.CharField(max_length=30, blank=True)
 
     def __str__(self):
-        return f"{self.fecha} {self.hora_inicio}-{self.hora_fin} / {self.veterinario}"
+        return f"{self.codigo_atencion} - {self.fecha} {self.hora_inicio}-{self.hora_fin} / {self.veterinario}"

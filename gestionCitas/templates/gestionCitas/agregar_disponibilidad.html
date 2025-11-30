@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+  .container {
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(15,23,42,0.05);
+  }
+
+  h2 {
+    color: #16a34a;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  .info-box {
+    background-color: #f0fdf4;
+    border-left: 4px solid #16a34a;
+    padding: 12px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+  }
+
+  .form-group {
+    margin-bottom: 16px;
+  }
+
+  label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #374151;
+  }
+
+  input[type="time"],
+  input[type="text"],
+  select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 1rem;
+    box-sizing: border-box;
+  }
+
+  .button-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .btn {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    font-weight: 600;
+  }
+
+  .btn-primary {
+    background-color: #16a34a;
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background-color: #15803d;
+  }
+
+  .btn-secondary {
+    background-color: #e5e7eb;
+    color: #374151;
+  }
+
+  .btn-secondary:hover {
+    background-color: #d1d5db;
+  }
+</style>
+
+<div class="container">
+  <h2>Agregar disponibilidad</h2>
+
+  <div class="info-box">
+    <p><strong>Fecha:</strong> {{ fecha|date:"j \\d\\e F, Y" }}</p>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+    
+    <div class="form-group">
+      <label for="veterinario">Veterinario:</label>
+      <select id="veterinario" name="veterinario" required>
+        <option value="">Selecciona un veterinario</option>
+        {% for vet in veterinarios %}
+          <option value="{{ vet.rut_vet }}" {% if veterinario and vet.rut_vet == veterinario.rut_vet %}selected{% endif %}>{{ vet.nombre }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="hora_inicio">Hora de inicio:</label>
+      <input type="time" id="hora_inicio" name="hora_inicio" required>
+    </div>
+
+    <div class="form-group">
+      <label for="hora_fin">Hora de fin:</label>
+      <input type="time" id="hora_fin" name="hora_fin" required>
+    </div>
+
+    <div class="button-group">
+      <button type="submit" class="btn btn-primary">Agregar bloque</button>
+      <a href="{% url 'gestionCitas:calendario_mes' %}" class="btn btn-secondary" style="text-decoration: none; display: flex; align-items: center; justify-content: center;">Cancelar</a>
+    </div>
+  </form>
+</div>
+
+{% endblock %}

@@ -398,7 +398,7 @@
           <select id="veterinario" name="veterinario">
             <option value="">Todos los veterinarios</option>
             {% for vet in veterinarios %}
-              <option value="{{ vet.id }}" {% if vet.id == veterinario_seleccionado %}selected{% endif %}>{{ vet.nombre }}</option>
+              <option value="{{ vet.rut_vet }}" {% if vet.rut_vet == veterinario_seleccionado %}selected{% endif %}>{{ vet.nombre }}</option>
             {% endfor %}
           </select>
         </div>
@@ -493,32 +493,34 @@
                   {% for bloque in dia.bloques %}
                     <div style="margin-top:4px; padding:3px; border:1px solid #ccc;">
                       <small style="justify-content: center; width: 100%; display: flex;">{{ bloque.hora_inicio }} - {{ bloque.hora_fin }}</small>
-                      <small>Vet: {{ bloque.veterinario.nombre }}</small><br>
+                      <hr>
+                      <small><strong>Vet:</strong> {{ bloque.veterinario.nombre }}</small><br>
 
                       {% if bloque.estado == 'DISPONIBLE' %}
                         <span class="estado" style="color:green; ">Disponible</span>
                         <hr>
-                        <a style="background-color: #16a34a93; color: #ffffff;" class="action-link" href="{% url 'gestionCitas:agendar_cita' bloque.id %}"> Agendar </a>
+                        <a style="background-color: #16a34a93; color: #ffffff; display:inline-block; padding: 8px 16px; border-radius: 6px; text-decoration: none; text-align: center; font-size: 0.75rem; width: 100%; box-sizing: border-box;" href="{% url 'gestionCitas:agendar_cita' bloque.pk %}">Agendar</a>
                       {% elif bloque.estado == 'RESERVADO' %}
-                        <small>Mascota: {{ bloque.mascota }}</small>
+                        <small><strong>Mascota:</strong> {{ bloque.mascota }}</small>
                         <span class="estado" style="color:orange;">Reservado</span>
                         <hr>
-                       
-                        <a style="background-color: #302de1aa; color: #ffffff;" class="action-link" href="{% url 'gestionCitas:reprogramar_cita' bloque.id %}">
-                            Reprogramar
-                        </a>
-                        <a style="background-color: #ea3b3b89; color: #ffffff;" class="action-link" href="{% url 'gestionCitas:cancelar_bloques_veterinario' bloque.id %}">
-                            Cancelar
-                        </a>
+                        <form method="get" action="{% url 'gestionCitas:reprogramar_cita' bloque.pk %}" style="display:inline; margin:0; width:100%;">
+                          <button type="submit" style="background-color: #302de1aa; color: #ffffff; border: none; border-radius: 6px; padding: 8px 16px; font-size: 0.75rem; cursor: pointer; text-align: center; width: 100%; margin-bottom: 4px;">Reprogramar</button>
+                        </form>
+                        <form method="post" action="{% url 'gestionCitas:cancelar_bloques_veterinario' bloque.pk %}" style="display:inline; margin:0; width:100%;">
+                          {% csrf_token %}
+                          <input type="hidden" name="next" value="{% url 'gestionCitas:calendario_mes' %}?year={{ year }}&month={{ month }}{% if veterinario_seleccionado %}&veterinario={{ veterinario_seleccionado }}{% endif %}">
+                          <button type="submit" style="background-color: #ea3b3b89; color: #ffffff; border: none; border-radius: 6px; padding: 8px 16px; font-size: 0.75rem; cursor: pointer; text-align: center; width: 100%;" onclick="return confirm('¿Estás seguro de que quieres cancelar esta cita?');">Cancelar</button>
+                        </form>
                       {% elif bloque.estado == 'CANCELADO_VET' %}
                         <span class="estado" style="color:red;">Cancelado</span>
                         <hr>
-                       <a style="background-color: #16a34a9f; color: #ffffff;" class="action-link" href="{% url 'gestionCitas:agendar_cita' bloque.id %}"> Agendar </a>
+                        <a style="background-color: #16a34a9f; color: #ffffff; display:inline-block; padding: 8px 16px; border-radius: 6px; text-decoration: none; text-align: center; font-size: 0.75rem; width: 100%; box-sizing: border-box;" href="{% url 'gestionCitas:agendar_cita' bloque.pk %}">Agendar</a>
                       {% endif %}
                     </div>
                   {% empty %}
                     <small>Sin bloques</small>
-                    <a style="background-color: #16a34a9f; color: #ffffff;" class="action-link" href=""> Agendar </a>
+                    <a style="background-color: #16a34a93; color: #ffffff; display:inline-block; padding: 8px 16px; border-radius: 6px; text-decoration: none; text-align: center; font-size: 0.75rem; width: 100%; box-sizing: border-box; margin-top: 4px;" href="{% url 'gestionCitas:agregar_disponibilidad' dia.fecha|date:'Y-m-d' '0' %}">Añadir disponibilidad</a>
                   {% endfor %}
                 {% endif %}
               </td>
